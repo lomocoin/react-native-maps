@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 
+import com.amap.api.maps.AMap;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -14,7 +15,6 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
 import com.facebook.react.uimanager.UIBlock;
 import com.facebook.react.uimanager.UIManagerModule;
-import com.google.android.gms.maps.GoogleMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -82,9 +82,10 @@ public class AirMapModule extends ReactContextBaseJavaModule {
           promise.reject("AirMapView.map is not valid");
           return;
         }
-        view.map.snapshot(new GoogleMap.SnapshotReadyCallback() {
-          public void onSnapshotReady(@Nullable Bitmap snapshot) {
 
+        view.map.getMapScreenShot(new AMap.OnMapScreenShotListener() {
+          @Override
+          public void onMapScreenShot(Bitmap snapshot) {
             // Convert image to requested width/height if necessary
             if (snapshot == null) {
               promise.reject("Failed to generate bitmap, snapshot = null");
@@ -119,6 +120,11 @@ public class AirMapModule extends ReactContextBaseJavaModule {
               String data = Base64.encodeToString(bytes, Base64.NO_WRAP);
               promise.resolve(data);
             }
+          }
+
+          @Override
+          public void onMapScreenShot(Bitmap bitmap, int i) {
+
           }
         });
       }
