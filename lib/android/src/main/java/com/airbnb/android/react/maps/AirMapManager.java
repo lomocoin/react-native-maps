@@ -95,6 +95,11 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   public void setShowsUserLocation(AirMapView view, boolean showUserLocation) {
     view.setShowsUserLocation(showUserLocation);
   }
+  //是否显示 zoom 缩放按钮
+  @ReactProp(name = "showZoomControlsEnabled", defaultBoolean = false)
+  public void setZoomControlsEnabled(AirMapView view, boolean showZoomControls) {
+    view.map.getUiSettings().setZoomControlsEnabled(showZoomControls);
+  }
 
   @ReactProp(name = "showsMyLocationButton", defaultBoolean = true)
   public void setShowsMyLocationButton(AirMapView view, boolean showMyLocationButton) {

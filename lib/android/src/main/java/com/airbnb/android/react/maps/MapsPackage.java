@@ -21,7 +21,10 @@ public class MapsPackage implements ReactPackage {
 
   @Override
   public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-    return Arrays.<NativeModule>asList(new AirMapModule(reactContext));
+    return Arrays.<NativeModule>asList(
+            new AirMapModule(reactContext),
+            new MapUtilsManager(reactContext)
+    );
   }
 
   @Override
