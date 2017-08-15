@@ -80,10 +80,10 @@ public class MapUtilsManager extends ReactContextBaseJavaModule {
                             lat = location.getLatitude();
                         }
                         try {
-                            WritableMap json = Arguments.createMap();
-                            json.putString("city", city);
-                            json.putDouble("lng", lng);
-                            json.putDouble("lat", lat);
+                            JSONObject json = new JSONObject();
+                            json.put("city", city);
+                            json.put("lng", lng);
+                            json.put("lat", lat);
                             promise.resolve(json.toString());
                         } catch (Exception ex) {
                             ex.printStackTrace();
