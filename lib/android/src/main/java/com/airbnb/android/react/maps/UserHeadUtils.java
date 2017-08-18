@@ -29,7 +29,7 @@ public class UserHeadUtils {
             //2.调整图片大小
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             int w = wm.getDefaultDisplay().getWidth();
-            int mW = (int) (w * 0.16);
+            int mW = (int) (w * 0.12);
             bitmap = getBitmapWithSize(bitmap, mW, mW);
             //3.添加光圈
 
