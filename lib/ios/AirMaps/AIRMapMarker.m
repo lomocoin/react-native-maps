@@ -282,9 +282,87 @@
                                                                          NSLog(@"%@", error);
                                                                      }
                                                                      dispatch_async(dispatch_get_main_queue(), ^{
-                                                                         self.image = image;
+                                                                         if([_imageSrc rangeOfString:@"ic_cny"].location == NSNotFound && [_imageSrc rangeOfString:@"ic_lmc"].location == NSNotFound && [_imageSrc rangeOfString:@"ic_btc"].location == NSNotFound){
+                                                                             self.image = [self drawImageWithImage:image];
+                                                                         }
+                                                                         else{
+                                                                             self.image = image;
+                                                                         }
                                                                      });
                                                                  }];
+}
+
+//把头像添加进wrapper里面
+- (UIImage *)drawImageWithImage:(UIImage *)image{
+    
+    UIImage * wrapper = [UIImage imageNamed:@"user-image-wrapper"];
+    
+    UIImage * userClip = [self circleImageWithImage:image];  //先把头像图片剪切成圆形
+    
+    UIImage * scaleImage = [self reSizeImage:userClip toSize:CGSizeMake(wrapper.size.width, wrapper.size.width)];   //再把剪切后的头像缩小到wrapper大小
+    
+    UIGraphicsBeginImageContext(CGSizeMake(wrapper.size.width, wrapper.size.width));
+    
+    //Draw image1
+    [scaleImage drawInRect:CGRectMake(wrapper.size.width*0.15, wrapper.size.width*0.15, wrapper.size.width*0.7, wrapper.size.width*0.7)];
+    
+    //Draw image2
+    [wrapper drawInRect:CGRectMake(0, 0, wrapper.size.width, wrapper.size.height) blendMode:kCGBlendModeDestinationOver alpha:1];
+    
+    
+    UIImage *resultImage = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return resultImage;
+}
+
+//先把头像图片剪切成圆形
+- (UIImage *)circleImageWithImage:(UIImage *)sourceImage{
+    
+    CGFloat imageWidth = sourceImage.size.width;
+    
+    CGFloat imageHeight = sourceImage.size.height;
+    
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(imageWidth, imageHeight), NO, 0.0);
+    
+    UIGraphicsGetCurrentContext();
+    
+    CGFloat radius = (sourceImage.size.width < sourceImage.size.height?sourceImage.size.width:sourceImage.size.height)*0.5;
+    
+    UIBezierPath *bezierPath = [UIBezierPath bezierPathWithArcCenter:CGPointMake(imageWidth * 0.5, imageHeight * 0.5) radius:radius startAngle:0 endAngle:M_PI * 2 clockwise:YES];
+    
+    
+    [bezierPath stroke];
+    
+    [bezierPath addClip];
+    
+    [sourceImage drawInRect:CGRectMake(0, 0, sourceImage.size.width, sourceImage.size.height)];
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return image;
+    
+}
+
+//再把剪切后的头像缩小到wrapper大小
+- (UIImage *)reSizeImage:(UIImage *)image toSize:(CGSize)reSize
+{
+    if([[UIScreen mainScreen] scale] == 2.0){
+        UIGraphicsBeginImageContextWithOptions(reSize, NO, 2.0);
+    }else{
+        UIGraphicsBeginImageContext(reSize);
+    }
+    
+    [image drawInRect:CGRectMake(0, 0, reSize.width, reSize.height)];
+    UIImage *reSizeImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    
+    return reSizeImage;
+    
 }
 
 - (void)setPinColor:(UIColor *)pinColor
