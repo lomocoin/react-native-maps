@@ -1,9 +1,9 @@
 package com.airbnb.android.react.maps;
 
 
-import com.amap.api.maps.model.*;
-import com.amap.api.maps.model.LatLng;
-import com.amap.api.maps.model.LatLngBounds;
+import com.amap.api.maps2d.model.*;
+import com.amap.api.maps2d.model.LatLng;
+import com.amap.api.maps2d.model.LatLngBounds;
 
 public class LatLngBoundsUtils {
   public static boolean BoundsAreDifferent(LatLngBounds a, LatLngBounds b) {

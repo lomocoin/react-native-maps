@@ -11,8 +11,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 
-import com.amap.api.maps.AMap;
-import com.amap.api.maps.model.*;
+import com.amap.api.maps2d.AMap;
+import com.amap.api.maps2d.model.*;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.DataSource;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -167,7 +167,7 @@ public class AirMapMarker extends AirMapFeature {
     public void setFlat(boolean flat) {
         this.flat = flat;
         if (marker != null) {
-            marker.setFlat(flat);
+//            marker.setFlat(flat);
         }
         update();
     }
@@ -191,7 +191,7 @@ public class AirMapMarker extends AirMapFeature {
     public void setOpacity(float opacity) {
         this.opacity = opacity;
         if (marker != null) {
-            marker.setAlpha(opacity);
+//            marker.setAlpha(opacity);
         }
         update();
     }
@@ -324,14 +324,14 @@ public class AirMapMarker extends AirMapFeature {
     private MarkerOptions createMarkerOptions() {
         MarkerOptions options = new MarkerOptions().position(position);
         if (anchorIsSet) options.anchor(anchorX, anchorY);
-        if (calloutAnchorIsSet) options.setInfoWindowOffset(calloutAnchorX, calloutAnchorY);
+//        if (calloutAnchorIsSet) options.(calloutAnchorX, calloutAnchorY);
         options.title(title);
         options.snippet(snippet);
-        options.rotateAngle(rotation);//旋转角度
-        options.setFlat(flat);//获取Marker覆盖物是否平贴地图。
+//        options.rotateAngle(rotation);//旋转角度
+//        options.setFlat(flat);//获取Marker覆盖物是否平贴地图。
         options.draggable(draggable);
         options.zIndex(zIndex);
-        options.alpha(opacity);
+//        options.alpha(opacity);
         options.icon(getIcon());
         return options;
     }

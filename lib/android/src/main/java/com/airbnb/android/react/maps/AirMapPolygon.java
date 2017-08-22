@@ -4,8 +4,8 @@ import android.content.Context;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.amap.api.maps.AMap;
-import com.amap.api.maps.model.*;
+import com.amap.api.maps2d.AMap;
+import com.amap.api.maps2d.model.*;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -6,7 +6,7 @@ import android.net.Uri;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 
-import com.amap.api.maps.AMap;
+import com.amap.api.maps2d.AMap;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -122,10 +122,10 @@ public class AirMapModule extends ReactContextBaseJavaModule {
             }
           }
 
-          @Override
-          public void onMapScreenShot(Bitmap bitmap, int i) {
-
-          }
+//          @Override
+//          public void onMapScreenShot(Bitmap bitmap, int i) {
+//
+//          }
         });
       }
     });

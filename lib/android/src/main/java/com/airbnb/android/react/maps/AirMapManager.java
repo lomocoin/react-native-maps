@@ -3,8 +3,8 @@ package com.airbnb.android.react.maps;
 import android.util.Log;
 import android.view.View;
 
-import com.amap.api.maps.*;
-import com.amap.api.maps.model.*;
+import com.amap.api.maps2d.*;
+import com.amap.api.maps2d.model.*;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -125,17 +125,20 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "showsBuildings", defaultBoolean = false)
   public void setShowBuildings(AirMapView view, boolean showBuildings) {
-    view.map.showBuildings(showBuildings);
+//    view.map.showBuildings(showBuildings);
+    Log.e("map error:","2d地图方法移除 setShowBuildings");
   }
 
   @ReactProp(name = "showsIndoors", defaultBoolean = false)
   public void setShowIndoors(AirMapView view, boolean showIndoors) {
-    view.map.showIndoorMap(showIndoors);
+//    view.map.showIndoorMap(showIndoors);
+    Log.e("map error:","2d地图方法移除 setShowIndoors");
   }
 
   @ReactProp(name = "showsIndoorLevelPicker", defaultBoolean = false)
   public void setShowsIndoorLevelPicker(AirMapView view, boolean showsIndoorLevelPicker) {
-    view.map.getUiSettings().setIndoorSwitchEnabled(showsIndoorLevelPicker);
+//    view.map.getUiSettings().setIndoorSwitchEnabled(showsIndoorLevelPicker);
+    Log.e("map error:","2d地图方法移除 setShowsIndoorLevelPicker");
   }
 
   @ReactProp(name = "showsCompass", defaultBoolean = false)
@@ -155,7 +158,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "rotateEnabled", defaultBoolean = false)
   public void setRotateEnabled(AirMapView view, boolean rotateEnabled) {
-    view.map.getUiSettings().setRotateGesturesEnabled(rotateEnabled);
+//    view.map.getUiSettings().setRotateGesturesEnabled(rotateEnabled);
+    Log.e("map error:","2d地图方法移除 setRotateEnabled");
   }
 
   @ReactProp(name = "cacheEnabled", defaultBoolean = false)
@@ -185,7 +189,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "pitchEnabled", defaultBoolean = false)
   public void setPitchEnabled(AirMapView view, boolean pitchEnabled) {
-    view.map.getUiSettings().setTiltGesturesEnabled(pitchEnabled);
+//    view.map.getUiSettings().setTiltGesturesEnabled(pitchEnabled);
+    Log.e("map error:","2d地图方法移除 setPitchEnabled");
   }
 
   @Override
@@ -205,10 +210,15 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         lat = region.getDouble("latitude");
         lngDelta = region.getDouble("longitudeDelta");
         latDelta = region.getDouble("latitudeDelta");
-        LatLngBounds bounds = new LatLngBounds(
-            new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
-            new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
-        );
+        LatLngBounds bounds = null;
+        try {
+          bounds = new LatLngBounds(
+              new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
+              new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
+          );
+        } catch (AMapException e) {
+
+        }
         view.animateToRegion(bounds, duration);
         break;
 

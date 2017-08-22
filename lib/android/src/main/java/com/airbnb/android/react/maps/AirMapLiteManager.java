@@ -1,6 +1,6 @@
 package com.airbnb.android.react.maps;
 
-import com.amap.api.maps.AMapOptions;
+import com.amap.api.maps2d.AMapOptions;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 public class AirMapLiteManager extends AirMapManager {
@@ -14,7 +14,7 @@ public class AirMapLiteManager extends AirMapManager {
 
   public AirMapLiteManager(ReactApplicationContext context) {
     super(context);
-    this.googleMapOptions = new AMapOptions().tiltGesturesEnabled(true);
+    this.googleMapOptions = new AMapOptions();
 //    this.googleMapOptions = new AMapOptions().liteMode(true);
   }
 

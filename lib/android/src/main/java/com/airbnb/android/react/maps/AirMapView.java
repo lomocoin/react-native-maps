@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -20,20 +21,21 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
-import com.amap.api.maps.AMap;
-import com.amap.api.maps.AMapOptions;
-import com.amap.api.maps.CameraUpdate;
-import com.amap.api.maps.CameraUpdateFactory;
-import com.amap.api.maps.MapView;
-import com.amap.api.maps.Projection;
-import com.amap.api.maps.model.CameraPosition;
-import com.amap.api.maps.model.LatLng;
-import com.amap.api.maps.model.LatLngBounds;
-import com.amap.api.maps.model.Marker;
-import com.amap.api.maps.model.Polygon;
-import com.amap.api.maps.model.Polyline;
-import com.amap.api.maps.model.VisibleRegion;
+import com.amap.api.maps2d.*;
+//import com.amap.api.maps.AMapOptions;
+//import com.amap.api.maps.CameraUpdate;
+//import com.amap.api.maps.CameraUpdateFactory;
+//import com.amap.api.maps.MapView;
+//import com.amap.api.maps.Projection;
+import com.amap.api.maps2d.model.*;
+//import com.amap.api.maps.model.LatLng;
+//import com.amap.api.maps.model.LatLngBounds;
+//import com.amap.api.maps.model.Marker;
+//import com.amap.api.maps.model.Polygon;
+//import com.amap.api.maps.model.Polyline;
+//import com.amap.api.maps.model.VisibleRegion;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -123,6 +125,8 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
       AirMapManager manager,AMapOptions googleMapOptions) {
     super(getNonBuggyContext(reactContext, appContext), googleMapOptions);
 
+    //显示世界地图
+    MapsInitializer.loadWorldGridMap(true);
     this.manager = manager;
     this.context = reactContext;
 
@@ -130,6 +134,23 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     // TODO(lmr): what about onStart????
     super.onResume();
     this.map = getMap();
+
+    setupLocationStyle();
+//    map.setOnCameraChangeListener(new AMap.OnCameraChangeListener() {
+//
+//      @Override
+//      public void onCameraChangeFinish(CameraPosition cameraPosition) {
+//        boolean isAbroad = cameraPosition.isAbroad;
+//        Toast.makeText(context,"是否在国外："+isAbroad,Toast.LENGTH_SHORT).show();
+//        map.setMapLanguage(isAbroad?AMap.ENGLISH:AMap.CHINESE);
+//		map.invalidate();
+//      }
+//
+//      @Override
+//      public void onCameraChange(CameraPosition cameraPosition) {
+//      }
+//    });
+
     map.setOnMapLoadedListener(this);
 //    super.getMapAsync(this);
 
@@ -173,6 +194,23 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     });
 
     eventDispatcher = reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
+  }
+
+  //设置地图 定位 蓝点样式
+  private void setupLocationStyle(){
+    // 自定义系统定位蓝点
+    MyLocationStyle myLocationStyle = new MyLocationStyle();
+    // 自定义定位蓝点图标
+    myLocationStyle.myLocationIcon(
+            BitmapDescriptorFactory.fromBitmap(Bitmap.createBitmap(1,1, Bitmap.Config.ARGB_8888)));
+    // 自定义精度范围的圆形边框颜色
+    myLocationStyle.strokeColor(0x00000000);
+    //自定义精度范围的圆形边框宽度
+    myLocationStyle.strokeWidth(1);
+    // 设置圆形的填充颜色
+    myLocationStyle.radiusFillColor(0x00000000);
+    // 将自定义的 myLocationStyle 对象添加到地图上
+    map.setMyLocationStyle(myLocationStyle);
   }
 
   @Override
@@ -227,14 +265,15 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
 //      }
 //    });
 
-    map.setOnPolylineClickListener(new AMap.OnPolylineClickListener() {
-      @Override
-      public void onPolylineClick(Polyline polyline) {
-        WritableMap event = makeClickEventData(polyline.getPoints().get(0));
-        event.putString("action", "polyline-press");
-        manager.pushEvent(context, polylineMap.get(polyline), "onPress", event);
-      }
-    });
+    // TODO: 17/8/21  2d 地图方法移除
+//    map.setOnPolylineClickListener(new AMap.OnPolylineClickListener() {
+//      @Override
+//      public void onPolylineClick(Polyline polyline) {
+//        WritableMap event = makeClickEventData(polyline.getPoints().get(0));
+//        event.putString("action", "polyline-press");
+//        manager.pushEvent(context, polylineMap.get(polyline), "onPress", event);
+//      }
+//    });
 
     map.setOnInfoWindowClickListener(new AMap.OnInfoWindowClickListener() {
       @Override
@@ -283,6 +322,12 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
         lastBoundsEmitted = bounds;
         eventDispatcher.dispatchEvent(new RegionChangeEvent(getId(), bounds, center, isTouchDown));
         view.stopMonitoringRegion();
+
+        boolean isAbroad = position.isAbroad;
+//        Toast.makeText(context,"是否在国外："+isAbroad,Toast.LENGTH_SHORT).show();
+        map.setMapLanguage(isAbroad?AMap.ENGLISH:AMap.CHINESE);
+        map.invalidate();
+
       }
 
       @Override
@@ -379,10 +424,15 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     Double lat = region.getDouble("latitude");
     Double lngDelta = region.getDouble("longitudeDelta");
     Double latDelta = region.getDouble("latitudeDelta");
-    LatLngBounds bounds = new LatLngBounds(
-        new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
-        new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
-    );
+    LatLngBounds bounds = null;
+    try {
+      bounds = new LatLngBounds(
+          new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
+          new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
+      );
+    } catch (AMapException e) {
+
+    }
     if (super.getHeight() <= 0 || super.getWidth() <= 0) {
       // in this case, our map has not been laid out yet, so we save the bounds in a local
       // variable, and make a guess of zoomLevel 10. Not to worry, though: as soon as layout
@@ -858,10 +908,10 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
             mapLoadingLayout.setVisibility(View.INVISIBLE);
           }
 
-          @Override
-          public void onMapScreenShot(Bitmap bitmap, int i) {
-
-          }
+//          @Override
+//          public void onMapScreenShot(Bitmap bitmap, int i) {
+//
+//          }
         });
       }
     } else {
