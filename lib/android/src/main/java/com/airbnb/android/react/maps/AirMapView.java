@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.location.Location;
 import android.os.Build;
 import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
@@ -74,6 +75,8 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
   private boolean moveOnMarkerPress = true;
   private boolean cacheEnabled = false;
 
+  private double lat=0,lng=0;
+
   private static final String[] PERMISSIONS = new String[]{
       "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"};
 
@@ -134,22 +137,8 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     // TODO(lmr): what about onStart????
     super.onResume();
     this.map = getMap();
-
+    map.setMyLocationEnabled(false);
     setupLocationStyle();
-//    map.setOnCameraChangeListener(new AMap.OnCameraChangeListener() {
-//
-//      @Override
-//      public void onCameraChangeFinish(CameraPosition cameraPosition) {
-//        boolean isAbroad = cameraPosition.isAbroad;
-//        Toast.makeText(context,"是否在国外："+isAbroad,Toast.LENGTH_SHORT).show();
-//        map.setMapLanguage(isAbroad?AMap.ENGLISH:AMap.CHINESE);
-//		map.invalidate();
-//      }
-//
-//      @Override
-//      public void onCameraChange(CameraPosition cameraPosition) {
-//      }
-//    });
 
     map.setOnMapLoadedListener(this);
 //    super.getMapAsync(this);
@@ -215,11 +204,9 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
 
   @Override
   public void onMapLoaded() {
-    Log.e("isme2","initonMapLoaded1");
     if (destroyed) {
       return;
     }
-    Log.e("isme2","initonMapLoaded2");
     this.map.setInfoWindowAdapter(this);
     this.map.setOnMarkerDragListener(this);
 
@@ -426,6 +413,8 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     Double latDelta = region.getDouble("latitudeDelta");
     LatLngBounds bounds = null;
     try {
+      this.lat = lat;
+      this.lng = lng;
       bounds = new LatLngBounds(
           new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
           new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
@@ -438,7 +427,7 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
       // variable, and make a guess of zoomLevel 10. Not to worry, though: as soon as layout
       // occurs, we will move the camera to the saved bounds. Note that if we tried to move
       // to the bounds now, it would trigger an exception.
-      map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 10));
+      map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 12));
       boundsToMove = bounds;
     } else {
       map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0));
@@ -449,8 +438,13 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
   public void setShowsUserLocation(boolean showUserLocation) {
     this.showUserLocation = showUserLocation; // hold onto this for lifecycle handling
     if (hasPermissions()) {
-      //noinspection MissingPermission
-      map.setMyLocationEnabled(showUserLocation);
+      Log.e("isme","map setShowsUserLocation125: init"+lat+"--"+lng);
+      try {
+        if(showUserLocation){
+          LatLng latLng = new LatLng(lat,lng);
+          map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+        }
+      }catch (Exception e){ }
     }
   }
 
