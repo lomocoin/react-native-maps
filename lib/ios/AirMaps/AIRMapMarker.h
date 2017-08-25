@@ -26,6 +26,7 @@
 @property (nonatomic, weak) AIRMap *map;
 @property (nonatomic, weak) RCTBridge *bridge;
 
+@property (nonatomic, strong) UIView *HeaderView;
 @property (nonatomic, strong) NSString *identifier;
 @property (nonatomic, copy) NSString *imageSrc;
 @property (nonatomic, copy) NSString *title;
