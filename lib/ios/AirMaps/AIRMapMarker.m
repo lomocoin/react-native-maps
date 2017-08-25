@@ -29,24 +29,35 @@
     // Make sure we use the image size when available
     CGSize size = self.image ? self.image.size : frame.size;
     CGRect bounds = {CGPointZero, size};
-
+    
     // The MapView is basically in charge of figuring out the center position of the marker view. If the view changed in
     // height though, we need to compensate in such a way that the bottom of the marker stays at the same spot on the
     // map.
     CGFloat dy = (bounds.size.height - self.bounds.size.height) / 2;
     CGPoint center = (CGPoint){ self.center.x, self.center.y - dy };
-
+    
     // Avoid crashes due to nan coords
     if (isnan(center.x) || isnan(center.y) ||
-            isnan(bounds.origin.x) || isnan(bounds.origin.y) ||
-            isnan(bounds.size.width) || isnan(bounds.size.height)) {
+        isnan(bounds.origin.x) || isnan(bounds.origin.y) ||
+        isnan(bounds.size.width) || isnan(bounds.size.height)) {
         RCTLogError(@"Invalid layout for (%@)%@. position: %@. bounds: %@",
-                self.reactTag, self, NSStringFromCGPoint(center), NSStringFromCGRect(bounds));
+                    self.reactTag, self, NSStringFromCGPoint(center), NSStringFromCGRect(bounds));
         return;
     }
-
+    
     self.center = center;
     self.bounds = bounds;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame{
+    if(self = [super initWithFrame:frame]){
+        
+        self.HeaderView = [[UIView alloc] init];
+        self.HeaderView.bounds = CGRectMake(-30, -30, 60, 60);
+        
+        [self addSubview:self.HeaderView];
+    }
+    return self;
 }
 
 - (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex {
@@ -74,17 +85,17 @@
             [self addGestureRecognizerToView:_pinView];
             _pinView.annotation = self;
         }
-
+        
         _pinView.draggable = self.draggable;
         _pinView.layer.zPosition = self.zIndex;
-
+        
         // TODO(lmr): Looks like this API was introduces in iOS 8. We may want to handle differently for earlier
         // versions. Right now it's just leaving it with the default color. People needing the colors are free to
         // use their own custom markers.
         if ([_pinView respondsToSelector:@selector(setPinTintColor:)]) {
             _pinView.pinTintColor = self.pinColor;
         }
-
+        
         return _pinView;
     } else {
         // If it has subviews, it means we are wanting to render a custom marker with arbitrary react views.
@@ -99,14 +110,14 @@
 - (void)fillCalloutView:(SMCalloutView *)calloutView
 {
     // Set everything necessary on the calloutView before it becomes visible.
-
+    
     // Apply the MKAnnotationView's desired calloutOffset (from the top-middle of the view)
     if ([self shouldUsePinView] && !_hasSetCalloutOffset) {
         calloutView.calloutOffset = CGPointMake(-8,0);
     } else {
         calloutView.calloutOffset = self.calloutOffset;
     }
-
+    
     if (self.calloutView) {
         calloutView.title = nil;
         calloutView.subtitle = nil;
@@ -119,13 +130,13 @@
             // as a result, we use the default "masked" background view.
             calloutView.backgroundView = [SMCalloutMaskedBackgroundView new];
         }
-
+        
         // when this is set, the callout's content will be whatever react views the user has put as the callout's
         // children.
         calloutView.contentView = self.calloutView;
-
+        
     } else {
-
+        
         // if there is no calloutView, it means the user wants to use the default callout behavior with title/subtitle
         // pairs.
         calloutView.title = self.title;
@@ -138,34 +149,34 @@
 - (void)showCalloutView
 {
     MKAnnotationView *annotationView = [self getAnnotationView];
-
+    
     [self setSelected:YES animated:NO];
-
+    
     id event = @{
-            @"action": @"marker-select",
-            @"id": self.identifier ?: @"unknown",
-            @"coordinate": @{
-                    @"latitude": @(self.coordinate.latitude),
-                    @"longitude": @(self.coordinate.longitude)
-            }
-    };
-
+                 @"action": @"marker-select",
+                 @"id": self.identifier ?: @"unknown",
+                 @"coordinate": @{
+                         @"latitude": @(self.coordinate.latitude),
+                         @"longitude": @(self.coordinate.longitude)
+                         }
+                 };
+    
     if (self.map.onMarkerSelect) self.map.onMarkerSelect(event);
     if (self.onSelect) self.onSelect(event);
-
+    
     if (![self shouldShowCalloutView]) {
         // no callout to show
         return;
     }
-
+    
     [self fillCalloutView:self.map.calloutView];
-
+    
     // This is where we present our custom callout view... MapKit's built-in callout doesn't have the flexibility
     // we need, but a lot of work was done by Nick Farina to make this identical to MapKit's built-in.
     [self.map.calloutView presentCalloutFromRect:annotationView.bounds
-                                         inView:annotationView
-                              constrainedToView:self.map
-                                       animated:YES];
+                                          inView:annotationView
+                               constrainedToView:self.map
+                                        animated:YES];
 }
 
 #pragma mark - Tap Gesture & Events.
@@ -224,18 +235,18 @@
 {
     // hide the callout view
     [self.map.calloutView dismissCalloutAnimated:YES];
-
+    
     [self setSelected:NO animated:NO];
-
+    
     id event = @{
-            @"action": @"marker-deselect",
-            @"id": self.identifier ?: @"unknown",
-            @"coordinate": @{
-                    @"latitude": @(self.coordinate.latitude),
-                    @"longitude": @(self.coordinate.longitude)
-            }
-    };
-
+                 @"action": @"marker-deselect",
+                 @"id": self.identifier ?: @"unknown",
+                 @"coordinate": @{
+                         @"latitude": @(self.coordinate.latitude),
+                         @"longitude": @(self.coordinate.longitude)
+                         }
+                 };
+    
     if (self.map.onMarkerDeselect) self.map.onMarkerDeselect(event);
     if (self.onDeselect) self.onDeselect(event);
 }
@@ -258,13 +269,13 @@
 
 - (void)setOpacity:(double)opacity
 {
-  [self setAlpha:opacity];
+    [self setAlpha:opacity];
 }
 
 - (void)setImageSrc:(NSString *)imageSrc
 {
     _imageSrc = imageSrc;
-
+    
     if (_reloadImageCancellationBlock) {
         _reloadImageCancellationBlock();
         _reloadImageCancellationBlock = nil;
@@ -283,14 +294,54 @@
                                                                      }
                                                                      dispatch_async(dispatch_get_main_queue(), ^{
                                                                          if([_imageSrc rangeOfString:@"ic_cny"].location == NSNotFound && [_imageSrc rangeOfString:@"ic_lmc"].location == NSNotFound && [_imageSrc rangeOfString:@"ic_btc"].location == NSNotFound){
-                                                                             self.image = [self drawImageWithImage:image];
+//                                                                             self.image = [self drawImageWithImage:image];
+                                                                             
+                                                                             [self headerViewAddImageHeader:image];
                                                                          }
                                                                          else{
-                                                                             self.image = image;
+                                                                             
+                                                                             for (UIView * view in self.HeaderView.subviews) {
+                                                                                 [view removeFromSuperview];
+                                                                             }
+                                                                             
+                                                                             if([_imageSrc rangeOfString:@"ic_cny"].location != NSNotFound){
+                                                                                 self.image = [UIImage imageNamed:@"ic_cny"];
+                                                                             }else if ([_imageSrc rangeOfString:@"ic_lmc"].location != NSNotFound){
+                                                                                 self.image = [UIImage imageNamed:@"ic_lmc"];
+                                                                             }
+                                                                             else if ([_imageSrc rangeOfString:@"ic_btc"].location != NSNotFound){
+                                                                                 self.image = [UIImage imageNamed:@"ic_btc"];
+                                                                             }
                                                                          }
                                                                      });
                                                                  }];
 }
+
+
+- (void)headerViewAddImageHeader:(UIImage *)headerimage{
+    
+    for (UIView * view in self.HeaderView.subviews) {
+        [view removeFromSuperview];
+    }
+    
+    UIImageView * wrapperImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
+    wrapperImageView.image = [UIImage imageNamed:@"user-image-wrapper"];
+    wrapperImageView.layer.masksToBounds = YES;
+    wrapperImageView.layer.cornerRadius = 30;
+    [self.HeaderView addSubview:wrapperImageView];
+    
+    self.image = [UIImage imageNamed:@"empty"];
+    
+    
+    UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(60*0.15, 60*0.15, 60*0.7, 60*0.7)];
+    headerImageView.image = headerimage;
+    headerImageView.layer.masksToBounds = YES;
+    headerImageView.layer.cornerRadius  = 60*0.7/2;
+    [self.HeaderView addSubview:headerImageView];
+    
+    
+}
+
 
 //把头像添加进wrapper里面
 - (UIImage *)drawImageWithImage:(UIImage *)image{
@@ -368,7 +419,7 @@
 - (void)setPinColor:(UIColor *)pinColor
 {
     _pinColor = pinColor;
-
+    
     if ([_pinView respondsToSelector:@selector(setPinTintColor:)]) {
         _pinView.pinTintColor = _pinColor;
     }
