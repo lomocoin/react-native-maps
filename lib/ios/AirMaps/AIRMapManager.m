@@ -637,10 +637,10 @@ static int kDragCenterContext;
 
     [self _regionChanged:mapView];
 
-    if (mapView.minZoomLevel != nil && zoomLevel < mapView.minZoomLevel) {
+    if (zoomLevel < mapView.minZoomLevel) {
       [self setCenterCoordinate:[mapView centerCoordinate] zoomLevel:mapView.minZoomLevel animated:TRUE mapView:mapView];
     }
-    else if (mapView.maxZoomLevel != nil && zoomLevel > mapView.maxZoomLevel) {
+    else if (zoomLevel > mapView.maxZoomLevel) {
       [self setCenterCoordinate:[mapView centerCoordinate] zoomLevel:mapView.maxZoomLevel animated:TRUE mapView:mapView];
     }
 
@@ -653,7 +653,6 @@ static int kDragCenterContext;
     mapView.pendingCenter = mapView.region.center;
     mapView.pendingSpan = mapView.region.span;
 }
-
 - (void)mapViewWillStartRenderingMap:(AIRMap *)mapView
 {
     mapView.hasStartedRendering = YES;
