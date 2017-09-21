@@ -4,22 +4,20 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.WindowManager;
 
-import com.amap.api.maps2d.model.LatLng;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.google.android.gms.maps.model.LatLng;
 
 public class AirMapCircleManager extends ViewGroupManager<AirMapCircle> {
   private final DisplayMetrics metrics;
 
   public AirMapCircleManager(ReactApplicationContext reactContext) {
     super();
-    Log.e("isme2"," init AirMapCircleManager");
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       metrics = new DisplayMetrics();
       ((WindowManager) reactContext.getSystemService(Context.WINDOW_SERVICE))
@@ -42,7 +40,6 @@ public class AirMapCircleManager extends ViewGroupManager<AirMapCircle> {
 
   @ReactProp(name = "center")
   public void setCenter(AirMapCircle view, ReadableMap center) {
-    Log.e("isme2","setCenter");
     view.setCenter(new LatLng(center.getDouble("latitude"), center.getDouble("longitude")));
   }
 

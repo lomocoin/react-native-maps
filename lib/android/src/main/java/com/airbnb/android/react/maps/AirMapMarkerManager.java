@@ -3,7 +3,6 @@ package com.airbnb.android.react.maps;
 import android.graphics.Color;
 import android.view.View;
 
-import com.amap.api.maps2d.model.Marker;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
@@ -11,6 +10,7 @@ import com.facebook.react.uimanager.LayoutShadowNode;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.google.android.gms.maps.model.Marker;
 
 import java.util.HashMap;
 import java.util.Map;

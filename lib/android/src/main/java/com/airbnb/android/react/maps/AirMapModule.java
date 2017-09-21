@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 
-import com.amap.api.maps2d.AMap;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -15,12 +14,17 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
 import com.facebook.react.uimanager.UIBlock;
 import com.facebook.react.uimanager.UIManagerModule;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import java.util.Map;
+import java.util.HashMap;
 
 import javax.annotation.Nullable;
 
@@ -38,6 +42,13 @@ public class AirMapModule extends ReactContextBaseJavaModule {
   @Override
   public String getName() {
     return "AirMapModule";
+  }
+
+  @Override
+  public Map<String, Object> getConstants() {
+    final Map<String, Object> constants = new HashMap<>();
+    constants.put("legalNotice", GoogleApiAvailability.getInstance().getOpenSourceSoftwareLicenseInfo(getReactApplicationContext()));
+    return constants;
   }
 
   public Activity getActivity() {
@@ -82,10 +93,9 @@ public class AirMapModule extends ReactContextBaseJavaModule {
           promise.reject("AirMapView.map is not valid");
           return;
         }
+        view.map.snapshot(new GoogleMap.SnapshotReadyCallback() {
+          public void onSnapshotReady(@Nullable Bitmap snapshot) {
 
-        view.map.getMapScreenShot(new AMap.OnMapScreenShotListener() {
-          @Override
-          public void onMapScreenShot(Bitmap snapshot) {
             // Convert image to requested width/height if necessary
             if (snapshot == null) {
               promise.reject("Failed to generate bitmap, snapshot = null");
@@ -121,11 +131,6 @@ public class AirMapModule extends ReactContextBaseJavaModule {
               promise.resolve(data);
             }
           }
-
-//          @Override
-//          public void onMapScreenShot(Bitmap bitmap, int i) {
-//
-//          }
         });
       }
     });

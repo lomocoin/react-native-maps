@@ -39,7 +39,7 @@ public class MapUtilsManager extends ReactContextBaseJavaModule {
 
     static {
         locationClientOption = new AMapLocationClientOption();
-        locationClientOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);// 设置定位模式
+        locationClientOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Battery_Saving);// 设置定位模式
         //初始化定位参数
         //设置定位模式为Hight_Accuracy高精度模式，Battery_Saving为低功耗模式，Device_Sensors是仅设备模式
         //设置是否返回地址信息（默认返回地址信息）
@@ -49,7 +49,7 @@ public class MapUtilsManager extends ReactContextBaseJavaModule {
         //设置是否强制刷新WIFI，默认为强制刷新
 //        locationClientOption.setWifiActiveScan(true); //启用方法
         //设置是否允许模拟位置,默认为false，不允许模拟位置
-        locationClientOption.setMockEnable(true);
+//        locationClientOption.setMockEnable(true);
         //设置定位间隔,单位毫秒,默认为2000ms
         locationClientOption.setInterval(2000);
         //定位超时时间 10秒

@@ -1,13 +1,11 @@
 package com.airbnb.android.react.maps;
 
 import android.content.Context;
-import android.util.Log;
 
-//import com.amap.api.maps2d.model.*;
-
-import com.amap.api.maps2d.AMap;
-import com.amap.api.maps2d.model.*;
-
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
 
 public class AirMapCircle extends AirMapFeature {
 
@@ -23,7 +21,6 @@ public class AirMapCircle extends AirMapFeature {
 
   public AirMapCircle(Context context) {
     super(context);
-    Log.e("isme2","AirMapCircle");
   }
 
   public void setCenter(LatLng center) {
@@ -92,12 +89,12 @@ public class AirMapCircle extends AirMapFeature {
   }
 
   @Override
-  public void addToMap(AMap map) {
+  public void addToMap(GoogleMap map) {
     circle = map.addCircle(getCircleOptions());
   }
 
   @Override
-  public void removeFromMap(AMap map) {
+  public void removeFromMap(GoogleMap map) {
     circle.remove();
   }
 }

@@ -1,10 +1,7 @@
 package com.airbnb.android.react.maps;
 
-import android.util.Log;
 import android.view.View;
 
-import com.amap.api.maps2d.*;
-import com.amap.api.maps2d.model.*;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -17,10 +14,16 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.google.gson.Gson;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 
 import java.util.Map;
+
 import javax.annotation.Nullable;
+
 public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   private static final String REACT_CLASS = "AIRMap";
@@ -31,26 +34,20 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   private static final int FIT_TO_COORDINATES = 5;
 
   private final Map<String, Integer> MAP_TYPES = MapBuilder.of(
-      "standard", AMap.MAP_TYPE_NORMAL,
-      "satellite", AMap.MAP_TYPE_SATELLITE,
-      "hybrid", AMap.MAP_TYPE_NORMAL,
-      "terrain", AMap.MAP_TYPE_NORMAL,
-      "none", AMap.MAP_TYPE_NORMAL
-//// TODO: 17/7/27  高德提供的 5种地图类型
-//    public static final int MAP_TYPE_NORMAL = 1;默认
-//    public static final int MAP_TYPE_SATELLITE = 2;
-//    public static final int MAP_TYPE_NIGHT = 3; 夜间
-//    public static final int MAP_TYPE_NAVI = 4;
-//    public static final int MAP_TYPE_BUS = 5; 公交
+      "standard", GoogleMap.MAP_TYPE_NORMAL,
+      "satellite", GoogleMap.MAP_TYPE_SATELLITE,
+      "hybrid", GoogleMap.MAP_TYPE_HYBRID,
+      "terrain", GoogleMap.MAP_TYPE_TERRAIN,
+      "none", GoogleMap.MAP_TYPE_NONE
   );
 
   private final ReactApplicationContext appContext;
 
-  protected AMapOptions googleMapOptions;
+  protected GoogleMapOptions googleMapOptions;
 
   public AirMapManager(ReactApplicationContext context) {
     this.appContext = context;
-    this.googleMapOptions = new AMapOptions();
+    this.googleMapOptions = new GoogleMapOptions();
   }
 
   @Override
@@ -75,8 +72,12 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "region")
   public void setRegion(AirMapView view, ReadableMap region) {
-    Log.e("isme2","setRegion"+new Gson().toJson(region));
     view.setRegion(region);
+  }
+
+  @ReactProp(name = "initialRegion")
+  public void setInitialRegion(AirMapView view, ReadableMap initialRegion) {
+    view.setInitialRegion(initialRegion);
   }
 
   @ReactProp(name = "mapType")
@@ -87,18 +88,12 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "customMapStyleString")
   public void setMapStyle(AirMapView view, @Nullable String customMapStyleString) {
-//    view.map.setMapStyle(new MapStyleOptions(customMapStyleString));
-    //// TODO: 17/7/27  高德地图没有设置地图样式
+    view.map.setMapStyle(new MapStyleOptions(customMapStyleString));
   }
 
   @ReactProp(name = "showsUserLocation", defaultBoolean = false)
   public void setShowsUserLocation(AirMapView view, boolean showUserLocation) {
     view.setShowsUserLocation(showUserLocation);
-  }
-  //是否显示 zoom 缩放按钮
-  @ReactProp(name = "showZoomControlsEnabled", defaultBoolean = false)
-  public void setZoomControlsEnabled(AirMapView view, boolean showZoomControls) {
-    view.map.getUiSettings().setZoomControlsEnabled(showZoomControls);
   }
 
   @ReactProp(name = "showsMyLocationButton", defaultBoolean = true)
@@ -125,20 +120,17 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "showsBuildings", defaultBoolean = false)
   public void setShowBuildings(AirMapView view, boolean showBuildings) {
-//    view.map.showBuildings(showBuildings);
-    Log.e("map error:","2d地图方法移除 setShowBuildings");
+    view.map.setBuildingsEnabled(showBuildings);
   }
 
   @ReactProp(name = "showsIndoors", defaultBoolean = false)
   public void setShowIndoors(AirMapView view, boolean showIndoors) {
-//    view.map.showIndoorMap(showIndoors);
-    Log.e("map error:","2d地图方法移除 setShowIndoors");
+    view.map.setIndoorEnabled(showIndoors);
   }
 
   @ReactProp(name = "showsIndoorLevelPicker", defaultBoolean = false)
   public void setShowsIndoorLevelPicker(AirMapView view, boolean showsIndoorLevelPicker) {
-//    view.map.getUiSettings().setIndoorSwitchEnabled(showsIndoorLevelPicker);
-    Log.e("map error:","2d地图方法移除 setShowsIndoorLevelPicker");
+    view.map.getUiSettings().setIndoorLevelPickerEnabled(showsIndoorLevelPicker);
   }
 
   @ReactProp(name = "showsCompass", defaultBoolean = false)
@@ -158,8 +150,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "rotateEnabled", defaultBoolean = false)
   public void setRotateEnabled(AirMapView view, boolean rotateEnabled) {
-//    view.map.getUiSettings().setRotateGesturesEnabled(rotateEnabled);
-    Log.e("map error:","2d地图方法移除 setRotateEnabled");
+    view.map.getUiSettings().setRotateGesturesEnabled(rotateEnabled);
   }
 
   @ReactProp(name = "cacheEnabled", defaultBoolean = false)
@@ -189,8 +180,17 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   @ReactProp(name = "pitchEnabled", defaultBoolean = false)
   public void setPitchEnabled(AirMapView view, boolean pitchEnabled) {
-//    view.map.getUiSettings().setTiltGesturesEnabled(pitchEnabled);
-    Log.e("map error:","2d地图方法移除 setPitchEnabled");
+    view.map.getUiSettings().setTiltGesturesEnabled(pitchEnabled);
+  }
+
+  @ReactProp(name = "minZoomLevel")
+  public void setMinZoomLevel(AirMapView view, float minZoomLevel) {
+    view.map.setMinZoomPreference(minZoomLevel);
+  }
+
+  @ReactProp(name = "maxZoomLevel")
+  public void setMaxZoomLevel(AirMapView view, float maxZoomLevel) {
+    view.map.setMaxZoomPreference(maxZoomLevel);
   }
 
   @Override
@@ -201,7 +201,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     Double lngDelta;
     Double latDelta;
     ReadableMap region;
-    Log.e("isme2",args.toString());
+
     switch (commandId) {
       case ANIMATE_TO_REGION:
         region = args.getMap(0);
@@ -210,15 +210,10 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         lat = region.getDouble("latitude");
         lngDelta = region.getDouble("longitudeDelta");
         latDelta = region.getDouble("latitudeDelta");
-        LatLngBounds bounds = null;
-        try {
-          bounds = new LatLngBounds(
-              new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
-              new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
-          );
-        } catch (AMapException e) {
-
-        }
+        LatLngBounds bounds = new LatLngBounds(
+            new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
+            new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
+        );
         view.animateToRegion(bounds, duration);
         break;
 

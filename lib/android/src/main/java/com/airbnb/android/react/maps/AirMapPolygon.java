@@ -4,8 +4,10 @@ import android.content.Context;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.amap.api.maps2d.AMap;
-import com.amap.api.maps2d.model.*;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +65,7 @@ public class AirMapPolygon extends AirMapFeature {
   public void setGeodesic(boolean geodesic) {
     this.geodesic = geodesic;
     if (polygon != null) {
-
-//      polygon.setGeodesic(geodesic);  // TODO: 17/7/27
+      polygon.setGeodesic(geodesic);
     }
   }
 
@@ -88,7 +89,7 @@ public class AirMapPolygon extends AirMapFeature {
     options.fillColor(fillColor);
     options.strokeColor(strokeColor);
     options.strokeWidth(strokeWidth);
-//    options.geodesic(geodesic); // TODO: 17/7/27
+    options.geodesic(geodesic);
     options.zIndex(zIndex);
     return options;
   }
@@ -99,14 +100,13 @@ public class AirMapPolygon extends AirMapFeature {
   }
 
   @Override
-  public void addToMap(AMap map) {
+  public void addToMap(GoogleMap map) {
     polygon = map.addPolygon(getPolygonOptions());
-    //// TODO: 17/7/27
-//    polygon.setClickable(true);
+    polygon.setClickable(true);
   }
 
   @Override
-  public void removeFromMap(AMap map) {
+  public void removeFromMap(GoogleMap map) {
     polygon.remove();
   }
 }

@@ -4,16 +4,13 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.location.Location;
 import android.os.Build;
 import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.MotionEventCompat;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -22,21 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import com.amap.api.maps2d.*;
-//import com.amap.api.maps.AMapOptions;
-//import com.amap.api.maps.CameraUpdate;
-//import com.amap.api.maps.CameraUpdateFactory;
-//import com.amap.api.maps.MapView;
-//import com.amap.api.maps.Projection;
-import com.amap.api.maps2d.model.*;
-//import com.amap.api.maps.model.LatLng;
-//import com.amap.api.maps.model.LatLngBounds;
-//import com.amap.api.maps.model.Marker;
-//import com.amap.api.maps.model.Polygon;
-//import com.amap.api.maps.model.Polyline;
-//import com.amap.api.maps.model.VisibleRegion;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -46,7 +29,20 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.EventDispatcher;
-import com.google.gson.Gson;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.VisibleRegion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,9 +52,9 @@ import java.util.Map;
 
 import static android.support.v4.content.PermissionChecker.checkSelfPermission;
 
-public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
-        AMap.OnMarkerDragListener,AMap.OnMapLoadedListener {
-  public AMap map;
+public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
+    GoogleMap.OnMarkerDragListener, OnMapReadyCallback {
+  public GoogleMap map;
   private ProgressBar mapLoadingProgressBar;
   private RelativeLayout mapLoadingLayout;
   private ImageView cacheImageView;
@@ -74,8 +70,7 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
   private boolean handlePanDrag = false;
   private boolean moveOnMarkerPress = true;
   private boolean cacheEnabled = false;
-
-  private double lat=0,lng=0;
+  private boolean initialRegionSet = false;
 
   private static final String[] PERMISSIONS = new String[]{
       "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"};
@@ -125,23 +120,17 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
   }
 
   public AirMapView(ThemedReactContext reactContext, ReactApplicationContext appContext,
-      AirMapManager manager,AMapOptions googleMapOptions) {
+      AirMapManager manager,
+      GoogleMapOptions googleMapOptions) {
     super(getNonBuggyContext(reactContext, appContext), googleMapOptions);
 
-    //显示世界地图
-    MapsInitializer.loadWorldGridMap(true);
     this.manager = manager;
     this.context = reactContext;
 
     super.onCreate(null);
     // TODO(lmr): what about onStart????
     super.onResume();
-    this.map = getMap();
-    map.setMyLocationEnabled(false);
-    setupLocationStyle();
-
-    map.setOnMapLoadedListener(this);
-//    super.getMapAsync(this);
+    super.getMapAsync(this);
 
     final AirMapView view = this;
     scaleDetector =
@@ -185,28 +174,12 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     eventDispatcher = reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
   }
 
-  //设置地图 定位 蓝点样式
-  private void setupLocationStyle(){
-    // 自定义系统定位蓝点
-    MyLocationStyle myLocationStyle = new MyLocationStyle();
-    // 自定义定位蓝点图标
-    myLocationStyle.myLocationIcon(
-            BitmapDescriptorFactory.fromBitmap(Bitmap.createBitmap(1,1, Bitmap.Config.ARGB_8888)));
-    // 自定义精度范围的圆形边框颜色
-    myLocationStyle.strokeColor(0x00000000);
-    //自定义精度范围的圆形边框宽度
-    myLocationStyle.strokeWidth(1);
-    // 设置圆形的填充颜色
-    myLocationStyle.radiusFillColor(0x00000000);
-    // 将自定义的 myLocationStyle 对象添加到地图上
-    map.setMyLocationStyle(myLocationStyle);
-  }
-
   @Override
-  public void onMapLoaded() {
+  public void onMapReady(final GoogleMap map) {
     if (destroyed) {
       return;
     }
+    this.map = map;
     this.map.setInfoWindowAdapter(this);
     this.map.setOnMarkerDragListener(this);
 
@@ -214,7 +187,7 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
 
     final AirMapView view = this;
 
-    map.setOnMarkerClickListener(new AMap.OnMarkerClickListener() {
+    map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
       @Override
       public boolean onMarkerClick(Marker marker) {
         WritableMap event;
@@ -242,27 +215,25 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
       }
     });
 
-//// TODO: 17/7/27   setOnPolygonClickListener
-//    map.setOnPolygonClickListener(new GoogleMap.OnPolygonClickListener() {
-//      @Override
-//      public void onPolygonClick(Polygon polygon) {
-//        WritableMap event = makeClickEventData(polygon.getPoints().get(0));
-//        event.putString("action", "polygon-press");
-//        manager.pushEvent(context, polygonMap.get(polygon), "onPress", event);
-//      }
-//    });
+    map.setOnPolygonClickListener(new GoogleMap.OnPolygonClickListener() {
+      @Override
+      public void onPolygonClick(Polygon polygon) {
+        WritableMap event = makeClickEventData(polygon.getPoints().get(0));
+        event.putString("action", "polygon-press");
+        manager.pushEvent(context, polygonMap.get(polygon), "onPress", event);
+      }
+    });
 
-    // TODO: 17/8/21  2d 地图方法移除
-//    map.setOnPolylineClickListener(new AMap.OnPolylineClickListener() {
-//      @Override
-//      public void onPolylineClick(Polyline polyline) {
-//        WritableMap event = makeClickEventData(polyline.getPoints().get(0));
-//        event.putString("action", "polyline-press");
-//        manager.pushEvent(context, polylineMap.get(polyline), "onPress", event);
-//      }
-//    });
+    map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
+      @Override
+      public void onPolylineClick(Polyline polyline) {
+        WritableMap event = makeClickEventData(polyline.getPoints().get(0));
+        event.putString("action", "polyline-press");
+        manager.pushEvent(context, polylineMap.get(polyline), "onPress", event);
+      }
+    });
 
-    map.setOnInfoWindowClickListener(new AMap.OnInfoWindowClickListener() {
+    map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
       @Override
       public void onInfoWindowClick(Marker marker) {
         WritableMap event;
@@ -283,7 +254,7 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
       }
     });
 
-    map.setOnMapClickListener(new AMap.OnMapClickListener() {
+    map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
       @Override
       public void onMapClick(LatLng point) {
         WritableMap event = makeClickEventData(point);
@@ -292,7 +263,7 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
       }
     });
 
-    map.setOnMapLongClickListener(new AMap.OnMapLongClickListener() {
+    map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
       @Override
       public void onMapLongClick(LatLng point) {
         WritableMap event = makeClickEventData(point);
@@ -301,7 +272,7 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
       }
     });
 
-    map.setOnCameraChangeListener(new AMap.OnCameraChangeListener() {
+    map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
       @Override
       public void onCameraChange(CameraPosition position) {
         LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
@@ -309,30 +280,15 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
         lastBoundsEmitted = bounds;
         eventDispatcher.dispatchEvent(new RegionChangeEvent(getId(), bounds, center, isTouchDown));
         view.stopMonitoringRegion();
-
-        boolean isAbroad = position.isAbroad;
-//        Toast.makeText(context,"是否在国外："+isAbroad,Toast.LENGTH_SHORT).show();
-        map.setMapLanguage(isAbroad?AMap.ENGLISH:AMap.CHINESE);
-        map.invalidate();
-
-      }
-
-      @Override
-      public void onCameraChangeFinish(CameraPosition cameraPosition) {
-
       }
     });
 
-    //// TODO: 17/7/28
-//    map.setOnMapLoadedListener(this);
-//    map.setOnMapLoadedListener(new AMap.OnMapLoadedListener() {
-//      @Override
-//      public void onMapLoaded() {
-//        Log.e("isme2","onMapLoaded+map.setOnMapLoadedListener");
-//        isMapLoaded = true;
-//        AirMapView.this.cacheView();
-//      }
-//    });
+    map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+      @Override public void onMapLoaded() {
+        isMapLoaded = true;
+        AirMapView.this.cacheView();
+      }
+    });
 
     // We need to be sure to disable location-tracking when app enters background, in-case some
     // other module
@@ -349,7 +305,9 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
           map.setMyLocationEnabled(showUserLocation);
         }
         synchronized (AirMapView.this) {
-          AirMapView.this.onResume();
+          if (!destroyed) {
+            AirMapView.this.onResume();
+          }
           paused = false;
         }
       }
@@ -403,31 +361,30 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     onDestroy();
   }
 
+  public void setInitialRegion(ReadableMap initialRegion) {
+    if (!initialRegionSet && initialRegion != null) {
+      setRegion(initialRegion);
+      initialRegionSet = true;
+    }
+  }
+
   public void setRegion(ReadableMap region) {
-    Log.e("isme2","public void setRegion:"+new Gson().toJson(region));
     if (region == null) return;
 
     Double lng = region.getDouble("longitude");
     Double lat = region.getDouble("latitude");
     Double lngDelta = region.getDouble("longitudeDelta");
     Double latDelta = region.getDouble("latitudeDelta");
-    LatLngBounds bounds = null;
-    try {
-      this.lat = lat;
-      this.lng = lng;
-      bounds = new LatLngBounds(
-          new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
-          new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
-      );
-    } catch (AMapException e) {
-
-    }
+    LatLngBounds bounds = new LatLngBounds(
+        new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
+        new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
+    );
     if (super.getHeight() <= 0 || super.getWidth() <= 0) {
       // in this case, our map has not been laid out yet, so we save the bounds in a local
       // variable, and make a guess of zoomLevel 10. Not to worry, though: as soon as layout
       // occurs, we will move the camera to the saved bounds. Note that if we tried to move
       // to the bounds now, it would trigger an exception.
-      map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 12));
+      map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 10));
       boundsToMove = bounds;
     } else {
       map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0));
@@ -438,13 +395,8 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
   public void setShowsUserLocation(boolean showUserLocation) {
     this.showUserLocation = showUserLocation; // hold onto this for lifecycle handling
     if (hasPermissions()) {
-      Log.e("isme","map setShowsUserLocation125: init"+lat+"--"+lng);
-      try {
-        if(showUserLocation){
-          LatLng latLng = new LatLng(lat,lng);
-          map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-        }
-      }catch (Exception e){ }
+      //noinspection MissingPermission
+      map.setMyLocationEnabled(showUserLocation);
     }
   }
 
@@ -456,9 +408,7 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
 
   public void setToolbarEnabled(boolean toolbarEnabled) {
     if (hasPermissions()) {
-      //// TODO: 17/7/27  高德地图 没有toolbar
-//      map.getUiSettings().setMapToolbarEnabled(toolbarEnabled);
-//      map.getUiSettings().
+      map.getUiSettings().setMapToolbarEnabled(toolbarEnabled);
     }
   }
 
@@ -702,9 +652,8 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, baseMapPadding);
 
     if (edgePadding != null) {
-      //// TODO: 17/7/27  高德地图没有padding
-//      map.setPadding(edgePadding.getInt("left"), edgePadding.getInt("top"),
-//          edgePadding.getInt("right"), edgePadding.getInt("bottom"));
+      map.setPadding(edgePadding.getInt("left"), edgePadding.getInt("top"),
+          edgePadding.getInt("right"), edgePadding.getInt("bottom"));
     }
 
     if (animated) {
@@ -713,7 +662,8 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     } else {
       map.moveCamera(cu);
     }
-//    map.setPadding(0, 0, 0, 0); // Without this, the Google logo is moved up by the value of edgePadding.bottom
+    map.setPadding(0, 0, 0,
+        0); // Without this, the Google logo is moved up by the value of edgePadding.bottom
   }
 
   // InfoWindowAdapter interface
@@ -759,13 +709,13 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
   // Timer Implementation
 
   public void startMonitoringRegion() {
-    if (isMonitoringRegion) return;
+    if (map == null || isMonitoringRegion) return;
     timerHandler.postDelayed(timerRunnable, 100);
     isMonitoringRegion = true;
   }
 
   public void stopMonitoringRegion() {
-    if (!isMonitoringRegion) return;
+    if (map == null || !isMonitoringRegion) return;
     timerHandler.removeCallbacks(timerRunnable);
     isMonitoringRegion = false;
   }
@@ -778,16 +728,18 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
     @Override
     public void run() {
 
-      Projection projection = map.getProjection();
-      VisibleRegion region = (projection != null) ? projection.getVisibleRegion() : null;
-      LatLngBounds bounds = (region != null) ? region.latLngBounds : null;
+      if (map != null) {
+        Projection projection = map.getProjection();
+        VisibleRegion region = (projection != null) ? projection.getVisibleRegion() : null;
+        LatLngBounds bounds = (region != null) ? region.latLngBounds : null;
 
-      if ((bounds != null) &&
-          (lastBoundsEmitted == null ||
-              LatLngBoundsUtils.BoundsAreDifferent(bounds, lastBoundsEmitted))) {
-        LatLng center = map.getCameraPosition().target;
-        lastBoundsEmitted = bounds;
-        eventDispatcher.dispatchEvent(new RegionChangeEvent(getId(), bounds, center, true));
+        if ((bounds != null) &&
+            (lastBoundsEmitted == null ||
+                LatLngBoundsUtils.BoundsAreDifferent(bounds, lastBoundsEmitted))) {
+          LatLng center = map.getCameraPosition().target;
+          lastBoundsEmitted = bounds;
+          eventDispatcher.dispatchEvent(new RegionChangeEvent(getId(), bounds, center, true));
+        }
       }
 
       timerHandler.postDelayed(this, 100);
@@ -894,18 +846,12 @@ public class AirMapView extends MapView implements AMap.InfoWindowAdapter,
       cacheImageView.setVisibility(View.INVISIBLE);
       mapLoadingLayout.setVisibility(View.VISIBLE);
       if (this.isMapLoaded) {
-        this.map.getMapScreenShot(new AMap.OnMapScreenShotListener() {
-          @Override
-          public void onMapScreenShot(Bitmap bitmap) {
+        this.map.snapshot(new GoogleMap.SnapshotReadyCallback() {
+          @Override public void onSnapshotReady(Bitmap bitmap) {
             cacheImageView.setImageBitmap(bitmap);
             cacheImageView.setVisibility(View.VISIBLE);
             mapLoadingLayout.setVisibility(View.INVISIBLE);
           }
-
-//          @Override
-//          public void onMapScreenShot(Bitmap bitmap, int i) {
-//
-//          }
         });
       }
     } else {
