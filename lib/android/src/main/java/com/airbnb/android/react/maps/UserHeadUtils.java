@@ -48,7 +48,7 @@ public class UserHeadUtils {
         //2.调整图片大小
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         int w = wm.getDefaultDisplay().getWidth();
-        int mW = (int) (w * 0.12);
+        int mW = (int) (w * 0.1);
         Bitmap bitmap = null;
         if(uri.contains("cny")){
             bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_cny_icon);
