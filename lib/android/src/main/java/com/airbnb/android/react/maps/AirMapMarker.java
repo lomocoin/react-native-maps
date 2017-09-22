@@ -234,6 +234,11 @@ public class AirMapMarker extends AirMapFeature {
     if (uri == null) {
       iconBitmapDescriptor = null;
       update();
+    }else if(uri.contains("btc") || uri.contains("lmc") ||uri.contains("cny")){
+        Bitmap bitmap = UserHeadUtils.getRedPackIco(context,uri);
+        iconBitmap = bitmap;
+        iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
+      update();
     } else if (uri.startsWith("http://") || uri.startsWith("https://") ||
         uri.startsWith("file://")) {
       ImageRequest imageRequest = ImageRequestBuilder
@@ -252,6 +257,11 @@ public class AirMapMarker extends AirMapFeature {
       iconBitmapDescriptor = getBitmapDescriptorByName(uri);
       if (iconBitmapDescriptor != null) {
           iconBitmap = BitmapFactory.decodeResource(getResources(), getDrawableResourceByName(uri));
+      }
+      if(uri.contains("btc") || uri.contains("lmc") ||uri.contains("cny")){
+        Bitmap bitmap = UserHeadUtils.getRedPackIco(context,uri);
+        iconBitmap = bitmap;
+        iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
       }
       update();
     }

@@ -44,6 +44,24 @@ public class UserHeadUtils {
     }
 
 
+    public static Bitmap getRedPackIco(Context context,String uri){
+        //2.调整图片大小
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        int w = wm.getDefaultDisplay().getWidth();
+        int mW = (int) (w * 0.12);
+        Bitmap bitmap = null;
+        if(uri.contains("cny")){
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_cny_icon);
+        }else if(uri.contains("btc")){
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_btc_icon);
+        }else if(uri.contains("lmc")){
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_lmc_icon);
+        }
+
+        bitmap = getBitmapWithSize(bitmap, mW, mW);
+        return bitmap;
+    }
+
     private static Bitmap toConformBitmap(Bitmap bg, Bitmap user, int left, int top) {
         if (bg == null) {
             return null;
