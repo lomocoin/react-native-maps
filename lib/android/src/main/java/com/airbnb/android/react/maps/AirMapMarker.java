@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -222,6 +223,7 @@ public class AirMapMarker extends AirMapFeature {
   }
 
   public void setImage(String uri) {
+    Log.e("isme","uri:"+uri);
     if (uri != null) {
       if (uri.startsWith("UserImg")) {
         uri = uri.substring("UserImg".length(), uri.length());

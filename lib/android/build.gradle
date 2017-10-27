@@ -39,6 +39,8 @@ dependencies {
   //compile 'com.google.android.gms:play-services-base:10.2.1'
   //compile 'com.google.android.gms:play-services-maps:10.2.1'
   //高德定位
+  //高德3d 地图
+  compile 'com.amap.api:3dmap:latest.integration'
   compile 'com.amap.api:location:latest.integration'
   compile "com.google.android.gms:play-services-base:10.2.4"
   compile "com.google.android.gms:play-services-maps:10.2.4"
