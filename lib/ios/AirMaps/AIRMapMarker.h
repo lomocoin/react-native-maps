@@ -34,6 +34,7 @@
 @property (nonatomic, assign) CLLocationCoordinate2D coordinate;
 @property (nonatomic, strong) UIColor *pinColor;
 @property (nonatomic, assign) NSInteger zIndex;
+@property (nonatomic, assign) NSInteger type;
 @property (nonatomic, assign) double opacity;
 
 @property (nonatomic, copy) RCTBubblingEventBlock onPress;
