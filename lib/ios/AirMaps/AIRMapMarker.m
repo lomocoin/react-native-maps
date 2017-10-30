@@ -52,6 +52,8 @@
 - (instancetype)initWithFrame:(CGRect)frame{
     if(self = [super initWithFrame:frame]){
         
+        self.type = 1;
+        
         self.HeaderView = [[UIView alloc] init];
         self.HeaderView.bounds = CGRectMake(-30, -30, 60, 60);
         
@@ -293,26 +295,9 @@
                                                                          NSLog(@"%@", error);
                                                                      }
                                                                      dispatch_async(dispatch_get_main_queue(), ^{
-                                                                         if([_imageSrc rangeOfString:@"ic_cny"].location == NSNotFound && [_imageSrc rangeOfString:@"ic_lmc"].location == NSNotFound && [_imageSrc rangeOfString:@"ic_btc"].location == NSNotFound){
-//                                                                             self.image = [self drawImageWithImage:image];
-                                                                             
-                                                                             [self headerViewAddImageHeader:image];
-                                                                         }
-                                                                         else{
-                                                                             
-                                                                             for (UIView * view in self.HeaderView.subviews) {
-                                                                                 [view removeFromSuperview];
-                                                                             }
-                                                                             
-                                                                             if([_imageSrc rangeOfString:@"ic_cny"].location != NSNotFound){
-                                                                                 self.image = [UIImage imageNamed:@"ic_cny"];
-                                                                             }else if ([_imageSrc rangeOfString:@"ic_lmc"].location != NSNotFound){
-                                                                                 self.image = [UIImage imageNamed:@"ic_lmc"];
-                                                                             }
-                                                                             else if ([_imageSrc rangeOfString:@"ic_btc"].location != NSNotFound){
-                                                                                 self.image = [UIImage imageNamed:@"ic_btc"];
-                                                                             }
-                                                                         }
+                                                                         
+                                                                         [self headerViewAddImageHeader:image];
+                                                                         
                                                                      });
                                                                  }];
 }
@@ -325,21 +310,31 @@
     }
     
     UIImageView * wrapperImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
-    wrapperImageView.image = [UIImage imageNamed:@"user-image-wrapper"];
     wrapperImageView.layer.masksToBounds = YES;
     wrapperImageView.layer.cornerRadius = 30;
     [self.HeaderView addSubview:wrapperImageView];
     
     self.image = [UIImage imageNamed:@"empty"];
     
-    
-    UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(60*0.15, 60*0.15, 60*0.7, 60*0.7)];
-    headerImageView.image = headerimage;
-    headerImageView.layer.masksToBounds = YES;
-    headerImageView.layer.cornerRadius  = 60*0.7/2;
-    [self.HeaderView addSubview:headerImageView];
-    
-    
+    if(self.type == 1){  //红包图片
+        
+        wrapperImageView.image = [UIImage imageNamed:@"red_envelope_bg"];
+        
+        UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(60*0.345, 60*0.25, 60*0.31, 60*0.31)];
+        headerImageView.image = headerimage;
+        headerImageView.layer.masksToBounds = YES;
+        headerImageView.layer.cornerRadius  = 60*0.7/2;
+        [self.HeaderView addSubview:headerImageView];
+    }
+    else if (self.type == 2){  //头像图片
+        wrapperImageView.image = [UIImage imageNamed:@"user-image-wrapper"];
+        
+        UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(60*0.15, 60*0.15, 60*0.7, 60*0.7)];
+        headerImageView.image = headerimage;
+        headerImageView.layer.masksToBounds = YES;
+        headerImageView.layer.cornerRadius  = 60*0.7/2;
+        [self.HeaderView addSubview:headerImageView];
+    }
 }
 
 
@@ -429,6 +424,11 @@
 {
     _zIndex = zIndex;
     self.layer.zPosition = _zIndex;
+}
+
+- (void)setType:(NSInteger)type
+{
+    _type = type;
 }
 
 @end
