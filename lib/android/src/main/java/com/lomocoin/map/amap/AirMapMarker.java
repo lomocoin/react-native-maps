@@ -57,6 +57,7 @@ public class AirMapMarker extends AirMapFeature {
     private BitmapDescriptor iconBitmapDescriptor;
     private Bitmap iconBitmap;
 
+    private int type = 1;//图片类型： 1 红包图片  2 头像图片  3 以上 待定 (默认1)
     private float rotation = 0.0f;
     private boolean flat = false;
     private boolean draggable = false;
@@ -68,7 +69,6 @@ public class AirMapMarker extends AirMapFeature {
     private boolean calloutAnchorIsSet;
 
     private boolean hasCustomMarkerView = false;
-    private boolean isUserIcon = false;//是否为显示用户头像
 
     private final DraweeHolder<?> logoHolder;
     private DataSource<CloseableReference<CloseableImage>> dataSource;
@@ -89,8 +89,10 @@ public class AirMapMarker extends AirMapFeature {
                                 Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
                                 if (bitmap != null) {
                                     bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-                                    if (isUserIcon) {
+                                    if (type == 2) {//用户头像
                                         bitmap = UserHeadUtils.createUserIcon(bitmap,context);
+                                    }else if(type == 1){//红包
+                                        bitmap = UserHeadUtils.createRedPacketIcon(bitmap,context);
                                     }
                                     iconBitmap = bitmap;
                                     iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
@@ -222,16 +224,11 @@ public class AirMapMarker extends AirMapFeature {
         update();
     }
 
-    public void setImage(String uri) {
-        if (uri != null) {
-            if (uri.startsWith("UserImg")) {
-                uri = uri.substring("UserImg".length(), uri.length());
-                isUserIcon = true;
-            } else {
-                isUserIcon = false;
-            }
-        }
+    public void setType(int type){
+        this.type = type;
+    }
 
+    public void setImage(String uri) {
         if (uri == null) {
             iconBitmapDescriptor = null;
             update();
@@ -250,8 +247,16 @@ public class AirMapMarker extends AirMapFeature {
                     .setOldController(logoHolder.getController())
                     .build();
             logoHolder.setController(controller);
-        } else {
-            iconBitmapDescriptor = getBitmapDescriptorByName(uri);
+        } else {//加载本地图片
+            if (type == 2) {//头像
+                Bitmap bitmap = UserHeadUtils.createUserIcon(iconBitmapDescriptor.getBitmap(),context);
+                iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
+            } else if (type == 1) {//红包
+                Bitmap bitmap = UserHeadUtils.createRedPacketIcon(iconBitmapDescriptor.getBitmap(),context);
+                iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
+            }else {
+                iconBitmapDescriptor = getBitmapDescriptorByName(uri);
+            }
             update();
         }
     }
@@ -291,19 +296,10 @@ public class AirMapMarker extends AirMapFeature {
 
     private BitmapDescriptor getIcon() {
         if (hasCustomMarkerView) {
-            // creating a bitmap from an arbitrary view
             if (iconBitmapDescriptor != null) {
                 Bitmap viewBitmap = createDrawable();
                 int width = Math.max(iconBitmap.getWidth(), viewBitmap.getWidth());
                 int height = Math.max(iconBitmap.getHeight(), viewBitmap.getHeight());
-//                Log.e("isme","isUserIcon:"+isUserIcon);
-//                if(isUserIcon){
-//                    WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-//                    int w = wm.getDefaultDisplay().getWidth();
-//                    width = Math.min(width, (int) (w * 0.2));
-//                    height = width;
-//                }
-
                 Bitmap combinedBitmap = Bitmap.createBitmap(width, height, iconBitmap.getConfig());
                 Canvas canvas = new Canvas(combinedBitmap);
                 canvas.drawBitmap(iconBitmap, 0, 0, null);

@@ -46,6 +46,33 @@ public class UserHeadUtils {
     }
 
 
+    //红包背景 135 * 135  中间圆点尺寸 42 * 42  left：47 top:33
+    public static Bitmap createRedPacketIcon(Bitmap bitmap, Context context) {
+        try {
+            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            int w = wm.getDefaultDisplay().getWidth();
+            int mW = (int) (w * 0.1);
+
+            Bitmap bg = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_map_rb_bg);
+
+            //调整图片大小
+            bg = getBitmapWithSize(bg, mW, mW);
+            //3.添加光圈
+            int icoW = (int)(mW * 42.0 / 135.0);
+            //调整 ico 图片大小
+            bitmap = getBitmapWithSize(bitmap, icoW, icoW);
+
+            //计算 left top 距离
+            int left = (int) (mW * (47 / 135.0));
+            int top = (int) (mW * (33 / 135.0));
+            //叠加图片
+            return toConformBitmap(bg, bitmap, left, top);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
     private static Bitmap toConformBitmap(Bitmap bg, Bitmap user, int left, int top) {
         if (bg == null) {
             return null;
