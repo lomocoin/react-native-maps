@@ -323,7 +323,7 @@
         UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(60*0.345, 60*0.25, 60*0.31, 60*0.31)];
         headerImageView.image = headerimage;
         headerImageView.layer.masksToBounds = YES;
-        headerImageView.layer.cornerRadius  = 60*0.7/2;
+        headerImageView.layer.cornerRadius  = 60*0.31/2;
         [self.HeaderView addSubview:headerImageView];
     }
     else if (self.type == 2){  //头像图片
