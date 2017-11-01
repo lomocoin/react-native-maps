@@ -231,11 +231,21 @@ public class AirMapMarker extends AirMapFeature {
         update();
     }
 
-    public void setType(int type){
-        this.type = type;
-    }
+//    public void setType(int type){
+//        this.type = type;
+//    }
 
     public void setImage(String uri) {
+        if(uri != null && uri.startsWith("type:") && uri.length() > "type:1".length()){
+            if(uri.startsWith("type:1")){
+                type = 1;
+            }else if(uri.startsWith("type:2")){
+                type = 2;
+            }
+
+            uri = uri.substring("type:1".length(),uri.length());
+        }
+
         if (uri == null) {
             iconBitmapDescriptor = null;
             update();

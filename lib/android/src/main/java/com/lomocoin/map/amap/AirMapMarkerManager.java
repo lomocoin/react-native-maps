@@ -90,11 +90,11 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
     view.setImage(source);
   }
 
-  //图片类型： 1 红包图片  2 头像图片  3 以上 待定
-  @ReactProp(name = "type",defaultInt = 1)
-  public void setType(AirMapMarker view,int type) {
-    view.setType(type);
-  }
+//  //图片类型： 1 红包图片  2 头像图片  3 以上 待定
+//  @ReactProp(name = "type",defaultInt = 1)
+//  public void setType(AirMapMarker view,int type) {
+//    view.setType(type);
+//  }
 
   @ReactProp(name = "pinColor", defaultInt = Color.RED, customType = "Color")
   public void setPinColor(AirMapMarker view, int pinColor) {
