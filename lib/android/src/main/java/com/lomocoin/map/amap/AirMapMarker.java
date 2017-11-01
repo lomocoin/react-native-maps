@@ -2,6 +2,7 @@ package com.lomocoin.map.amap;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.drawable.Animatable;
@@ -13,6 +14,11 @@ import android.widget.LinearLayout;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.model.*;
+import com.amap.api.maps.model.BitmapDescriptor;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.DataSource;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -30,6 +36,7 @@ import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.facebook.react.bridge.ReadableMap;
+import com.google.android.gms.maps.model.*;
 
 import javax.annotation.Nullable;
 
@@ -248,16 +255,16 @@ public class AirMapMarker extends AirMapFeature {
                     .build();
             logoHolder.setController(controller);
         } else {//加载本地图片
-            if (type == 2) {//头像
-                Bitmap bitmap = UserHeadUtils.createUserIcon(iconBitmapDescriptor.getBitmap(),context);
+            try {
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), getDrawableResourceByName(uri));
+                if (type == 2) {//头像
+                    bitmap = UserHeadUtils.createUserIcon(bitmap, context);
+                    bitmap = UserHeadUtils.createRedPacketIcon(bitmap, context);
+                }
                 iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
-            } else if (type == 1) {//红包
-                Bitmap bitmap = UserHeadUtils.createRedPacketIcon(iconBitmapDescriptor.getBitmap(),context);
-                iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
-            }else {
-                iconBitmapDescriptor = getBitmapDescriptorByName(uri);
+                update();
+            } catch (Exception e) {
             }
-            update();
         }
     }
 
