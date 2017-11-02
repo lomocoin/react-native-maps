@@ -330,7 +330,7 @@ public class AirMapMarker extends AirMapFeature {
             return iconBitmapDescriptor;
         } else {
             // render the default marker pin
-            return BitmapDescriptorFactory.defaultMarker(this.markerHue);
+            return BitmapDescriptorFactory.fromBitmap(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888));
         }
     }
 
