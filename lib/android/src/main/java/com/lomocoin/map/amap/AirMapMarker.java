@@ -245,7 +245,6 @@ public class AirMapMarker extends AirMapFeature {
 
             uri = uri.substring("type:1".length(),uri.length());
         }
-
         if (uri == null) {
             iconBitmapDescriptor = null;
             update();
@@ -269,6 +268,7 @@ public class AirMapMarker extends AirMapFeature {
                 Bitmap bitmap = BitmapFactory.decodeResource(getResources(), getDrawableResourceByName(uri));
                 if (type == 2) {//头像
                     bitmap = UserHeadUtils.createUserIcon(bitmap, context);
+                }else if(type == 1){
                     bitmap = UserHeadUtils.createRedPacketIcon(bitmap, context);
                 }
                 iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
