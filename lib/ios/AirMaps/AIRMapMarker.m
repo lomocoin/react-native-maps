@@ -309,31 +309,34 @@
         [view removeFromSuperview];
     }
     
-    UIImageView * wrapperImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
+    UIImageView * wrapperImageView = [[UIImageView alloc] init];
     wrapperImageView.layer.masksToBounds = YES;
-    wrapperImageView.layer.cornerRadius = 30;
     [self.HeaderView addSubview:wrapperImageView];
     
     self.image = [UIImage imageNamed:@"empty"];
     
     if(self.type == 1){  //红包图片
         
+        wrapperImageView.frame = CGRectMake(5, 5, 50, 50);
+        wrapperImageView.layer.cornerRadius = 25;
         wrapperImageView.image = [UIImage imageNamed:@"red_envelope_bg"];
         
-        UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(60*0.345, 60*0.25, 60*0.31, 60*0.31)];
+        UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(50*0.345, 50*0.25, 50*0.31, 50*0.31)];
         headerImageView.image = headerimage;
         headerImageView.layer.masksToBounds = YES;
-        headerImageView.layer.cornerRadius  = 60*0.31/2;
-        [self.HeaderView addSubview:headerImageView];
+        headerImageView.layer.cornerRadius  = 50*0.31/2;
+        [wrapperImageView addSubview:headerImageView];
     }
     else if (self.type == 2){  //头像图片
+        wrapperImageView.frame = CGRectMake(0, 0, 60, 60);
+        wrapperImageView.layer.cornerRadius = 30;
         wrapperImageView.image = [UIImage imageNamed:@"user-image-wrapper"];
         
         UIImageView * headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(60*0.15, 60*0.15, 60*0.7, 60*0.7)];
         headerImageView.image = headerimage;
         headerImageView.layer.masksToBounds = YES;
         headerImageView.layer.cornerRadius  = 60*0.7/2;
-        [self.HeaderView addSubview:headerImageView];
+        [wrapperImageView addSubview:headerImageView];
     }
 }
 
