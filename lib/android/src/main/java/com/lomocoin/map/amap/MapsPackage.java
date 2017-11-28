@@ -27,7 +27,8 @@ public class MapsPackage implements ReactPackage {
     );
   }
 
-  @Override
+//    Deprecated in React Native 0.47
+//    @Override
   public List<Class<? extends JavaScriptModule>> createJSModules() {
     return Collections.emptyList();
   }
